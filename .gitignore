@@ -1,0 +1,14 @@
+# Ignore the scala folder
+scala_code/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore virtual environment
+venv/
+env/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
