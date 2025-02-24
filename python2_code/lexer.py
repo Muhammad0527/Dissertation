@@ -163,6 +163,43 @@ class Rec(Val):
     def __repr__(self):
         return "Rec(\"%s\", %s)" % (self.x, self.v)
 
+def eq_rexp(r1, r2):
+    # Checks whether two regular expressions r1 and r2 have the same structure
+    if isinstance(r1, ZERO) and isinstance(r2, ZERO):
+        return True
+    if isinstance(r1, ONE) and isinstance(r2, ONE):
+        return True
+    if isinstance(r1, CHAR) and isinstance(r2, CHAR):
+        return r1.c == r2.c
+    if isinstance(r1, ALT) and isinstance(r2, ALT):
+        return eq_rexp(r1.r1, r2.r1) and eq_rexp(r1.r2, r2.r2)
+    if isinstance(r1, SEQ) and isinstance(r2, SEQ):
+        return eq_rexp(r1.r1, r2.r1) and eq_rexp(r1.r2, r2.r2)
+    if isinstance(r1, STAR) and isinstance(r2, STAR):
+        return eq_rexp(r1.r, r2.r)
+    if isinstance(r1, RANGE) and isinstance(r2, RANGE):
+        # compare elements one by one; RPython needs simple loops
+        if len(r1.cs) != len(r2.cs):
+            return False
+        for i in range(len(r1.cs)):
+            if r1.cs[i] != r2.cs[i]:
+                return False
+        return True
+    if isinstance(r1, PLUS) and isinstance(r2, PLUS):
+        return eq_rexp(r1.r, r2.r)
+    if isinstance(r1, OPTIONAL) and isinstance(r2, OPTIONAL):
+        return eq_rexp(r1.r, r2.r)
+    if isinstance(r1, NTIMES) and isinstance(r2, NTIMES):
+        return (r1.n == r2.n) and eq_rexp(r1.r, r2.r)
+    if isinstance(r1, RECD) and isinstance(r2, RECD):
+        if r1.x != r2.x:
+            return False
+        return eq_rexp(r1.r, r2.r)
+
+    # If none of the above matched, they're not equal structurally
+    return False
+
+
 def nullable(r):
     if isinstance(r, ZERO):
         return False
@@ -261,106 +298,33 @@ def regex_to_string(r):
     elif isinstance(r, RECD):
         return "%s" % regex_to_string(r.r)
 
-# Test cases for the der function
-
-# Derivative of a sequence of characters
-# x1 = der("a", SEQ(CHAR("a"), CHAR("b")))
-# print "DER SEQUENCE TEST"
-# print(isinstance(x1, SEQ))
-# print x1.r1
-# print x1.r2.c == "b"  
-
-# Derivative of an alternation of characters
-# x2 = der("a", ALT(CHAR("a"), CHAR("b")))
-# print "DER ALTERNATION TEST"
-# print(isinstance(x2, ALT))
-# print x2.r1
-# print x2.r2  
-
-# Derivative of a star of a character
-# x3 = der("a", STAR(CHAR("a")))
-# print "DER STAR TEST"
-# print(isinstance(x3, SEQ))
-# print x3.r1
-# print x3.r2
-# print x3.r2.__repr__() ==  "STAR(CHAR(\"a\"))" 
-# print RECD("cheese", SEQ(CHAR('c'), SEQ(CHAR('h'), SEQ(CHAR('e'), SEQ(CHAR('e'), SEQ(CHAR("s"), CHAR("e")))))))
-# Derivative of a star of a character
-# x3 = der("b", STAR(CHAR("a")))
-# print "DER STAR FAIL TEST"
-# print(isinstance(x3, SEQ))
-# print x3.r1
-# print x3.r2
-
-# # Derivative of a range of characters
-# x4 = der("a", RANGE("abc"))
-# print(isinstance(x4, ONE))  # Expected: True
-
-# # Derivative of a plus of a character
-# x5 = der("a", PLUS(CHAR("a")))
-# print(isinstance(x5, SEQ))  # Expected: True
-
-# # Derivative of an optional character
-# x6 = der("a", OPTIONAL(CHAR("a")))
-# print(isinstance(x6, ONE))  # Expected: True
-
-# # Derivative of a character not in the range
-# x7 = der("d", RANGE("abc"))
-# print(isinstance(x7, ZERO))  # Expected: True
-
-# # Derivative of a sequence with nullable first part
-# x8 = der("a", SEQ(OPTIONAL(CHAR("a")), CHAR("b")))
-# print(isinstance(x8, ALT))  # Expected: True
-
-# # Derivative of a recorded expression
-# x9 = der("a", RECD("x", CHAR("a")))
-# print(isinstance(x9, ONE))  # Expected: True
-
-# # Derivative of a zero expression
-# x10 = der("a", ZERO())
-# print(isinstance(x10, ZERO))  # Expected: True
-
-# # Derivative of a one expression
-# x11 = der("a", ONE())
-# print(isinstance(x11, ZERO))  # Expected: True
-
-# # Derivative of a character that matches
-# x12 = der("a", CHAR("a"))
-# print(isinstance(x12, ONE))  # Expected: True
-
-# # Derivative of a character that does not match
-# x13 = der("b", CHAR("a"))
-# print(isinstance(x13, ZERO))  # Expected: True
-
-# # Derivative of a sequence with non-nullable first part
-# x14 = der("a", SEQ(CHAR("a"), CHAR("b")))
-# print(isinstance(x14, SEQ))  # Expected: True
-
-# # Derivative of a sequence with nullable first part
-# x15 = der("a", SEQ(OPTIONAL(CHAR("a")), CHAR("b")))
-# print(isinstance(x15, ALT))  # Expected: True
-
-# # Derivative of a star of a sequence
-# x16 = der("a", STAR(SEQ(CHAR("a"), CHAR("b"))))
-# print(isinstance(x16, SEQ))  # Expected: True
-
-# # Derivative of a plus of a sequence
-# x17 = der("a", PLUS(SEQ(CHAR("a"), CHAR("b"))))
-# print(isinstance(x17, SEQ))  # Expected: True
-
-# # Derivative of an optional sequence
-# x18 = der("a", OPTIONAL(SEQ(CHAR("a"), CHAR("b"))))
-# print(isinstance(x18, SEQ))  # Expected: True
-
-# # Derivative of a recorded sequence
-# x19 = der("a", RECD("x", SEQ(CHAR("a"), CHAR("b"))))
-# print(isinstance(x19, SEQ))  # Expected: True
-
-# # Derivative of a sequence with a range
-# x20 = der("a", SEQ(RANGE("abc"), CHAR("b")))
-# print(isinstance(x20, SEQ))  # Expected: True
-
-
+def ders(r, s):
+    if not s:
+        return r
+    else:
+        return ders(der(s[0], r), s[1:])
+    
+def size(r):
+    if isinstance(r, ZERO) or isinstance(r, ONE):
+        return 1
+    elif isinstance(r, CHAR):
+        return 1
+    elif isinstance(r, ALT):
+        return 1 + size(r.r1) + size(r.r2)
+    elif isinstance(r, SEQ):
+        return 1 + size(r.r1) + size(r.r2)
+    elif isinstance(r, STAR):
+        return 1 + size(r.r)
+    elif isinstance(r, RANGE):
+        return 1
+    elif isinstance(r, PLUS):
+        return 1 + size(r.r)
+    elif isinstance(r, OPTIONAL):
+        return 1 + size(r.r)
+    elif isinstance(r, NTIMES):
+        return 1 + size(r.r)
+    elif isinstance(r, RECD):
+        return 1 + size(r.r)
 
 # Flatten function to convert a value to a string
 def flatten(v):
@@ -399,12 +363,6 @@ def flatten(v):
         return result
     elif isinstance(v, Rec):
         return flatten(v.v)
-    
-# print flatten(Sequ(Chr("a"), Chr("b")))  # Expected: "ab"
-# print flatten(Stars([Chr("a"), Chr("b"), Chr("c")]))  # Expected: "abc"
-# print flatten(Rng([Chr("a"), Chr("b"), Chr("c"), Empty()]))  # Expected: "abc"
-
-
 
 def env(v):
     if isinstance(v, Empty):
@@ -456,10 +414,6 @@ def env(v):
     elif isinstance(v, Rec):
         # Captured expressions produce a binding with their name and value
         return [(v.x, flatten(v.v))] + env(v.v)
-    
-# print env(Rec("x", Chr("a")))  # Expected: [("x", "a")]
-# print env(Stars([Rec("x", Chr("a")), Rec("y", Chr("b"))]))  # Expected: [("x", "a"), ("y", "b")]
-# print env(Rec("cheese", Sequ(Chr('c'), Sequ(Chr('h'), Sequ(Chr('e'), Sequ(Chr('e'), Sequ(Chr("s"), Chr("e"))))))))
 
 def mkeps(r):
     if isinstance(r, ONE):
@@ -491,10 +445,6 @@ def mkeps(r):
     
     elif isinstance(r, RECD):
         return Rec(r.x, mkeps(r.r))
-
-# print mkeps(ALT(ONE(), CHAR("a")))  # Expected: Left(Empty)
-# x = mkeps(SEQ(ONE(), NTIMES(0, CHAR("D"))))  # Expected: Sequ(Empty, Chr("a"))
-# print x.v2
 
 def inj(r, c, v):
     if isinstance(r, STAR) and isinstance(v, Sequ):
@@ -544,62 +494,6 @@ def inj(r, c, v):
     elif isinstance(r, RECD):
         # RECD: inject within the recorded regular expression
         return Rec(r.x, inj(r.r, c, v))
-    
-# regex = SEQ(CHAR("a"), CHAR("b"))
-# der1 = der("a", regex)
-# print der1
-# der2 = der("b", der1)
-# print der2
-# m = mkeps(der2)
-# print m
-# i = inj(der1, "b", m)
-# print i
-# n = inj(regex, "a", i)
-# print n
-# print flatten(n)
-
-# regex = SEQ(ALT(CHAR("a"), CHAR("b")), CHAR("c"))
-# der1 = der("a", regex)
-# print der1
-# der2 = der("c", der1)
-# print der2
-# m = mkeps(der2)
-# print m
-# i = inj(der1, "c", m)
-# print i
-# n = inj(regex, "a", i)
-# print n
-# print flatten(n)
-
-# regex = RECD("beans",STAR(CHAR("a")))
-# der1 = der("a", regex)
-# print der1
-# der2 = der("a", der1)
-# print der2
-# m = mkeps(der2)
-# print m
-# i = inj(der1, "a", m)
-# print i
-# n = inj(regex, "a", i)
-# print n
-# print flatten(n)
-
-regex = NTIMES(CHAR("a"), 3)
-der1 = der("a", regex)
-print der1
-der2 = der("a", der1)
-print der2
-der3 = der("a", der2)
-print der3
-m = mkeps(der3)
-print m
-i = inj(der2, "a", m)
-print i
-n = inj(der1, "a", i)
-print n
-a = inj(regex, "a", n)
-print a
-print flatten(a)
 
 # Functions translated to RPython
 def F_ID(v):
@@ -663,7 +557,7 @@ def simp(r):
             return r2s, F_RIGHT(f2s)
         elif isinstance(r2s, ZERO):
             return r1s, F_LEFT(f1s)
-        elif r1s == r2s:
+        elif eq_rexp(r1s, r2s):
             return r1s, F_LEFT(f1s)
         else:
             return ALT(r1s, r2s), F_ALT(f1s, f2s)
@@ -685,12 +579,6 @@ def simp(r):
         # For other types, return as is with F_ID
         return (r, F_ID)
 
-reg = ALT(ALT(ALT(CHAR("a"), ZERO()), CHAR("c")), CHAR("d"))
-print reg
-f, g = simp(reg)
-print f
-print g
-
 def lex_simp(r, s):
     if not s:  # If the list is empty
         if nullable(r):
@@ -705,10 +593,6 @@ def lex_simp(r, s):
 def lexing_simp(r, s):
     return env(lex_simp(r, list(s)))
 
-# print lexing_simp(RECD("CD",STAR(CHAR("a"))), list("aaa"))
-print lexing_simp(RECD("AB",NTIMES(CHAR("a"), 3)), list("aaa"))
-# print(lexing_simp(SEQ(CHAR("a"), CHAR("b")), "ab"))
-
 # Define regex for keywords in language
 while_regex = SEQ(CHAR("w"), SEQ(CHAR("h"), SEQ(CHAR("i"), SEQ(CHAR("l"), CHAR("e")))))
 if_regex = SEQ(CHAR("i"), CHAR("f"))
@@ -719,27 +603,7 @@ false_regex = SEQ(CHAR("f"), SEQ(CHAR("a"), SEQ(CHAR("l"), SEQ(CHAR("s"), CHAR("
 read_regex = SEQ(CHAR("r"), SEQ(CHAR("e"), SEQ(CHAR("a"), CHAR("d"))))
 write_regex = SEQ(CHAR("w"), SEQ(CHAR("r"), SEQ(CHAR("i"), SEQ(CHAR("t"), CHAR("e")))))
 
-print regex_to_string(while_regex)  # Expected: "while"
-print regex_to_string(if_regex)  # Expected: "if"
-print regex_to_string(else_regex)  # Expected: "else"
-print regex_to_string(then_regex)  # Expected: "then"
-print regex_to_string(true_regex)  # Expected: "true"
-print regex_to_string(false_regex)  # Expected: "false"
-print regex_to_string(read_regex)  # Expected: "read"
-print regex_to_string(write_regex)  # Expected: "write"
-
-
 KEYWORD_REGEX = ALT(while_regex, ALT(if_regex, ALT(then_regex, ALT(else_regex, ALT(true_regex, ALT(false_regex, ALT(read_regex, write_regex)))))))
-
-
-print lexing_simp(RECD("K", KEYWORD_REGEX), list("while"))
-print lexing_simp(RECD("K", KEYWORD_REGEX), list("if"))
-print lexing_simp(RECD("K", KEYWORD_REGEX), list("then"))
-print lexing_simp(RECD("K", KEYWORD_REGEX), list("else"))
-print lexing_simp(RECD("K", KEYWORD_REGEX), list("true"))
-print lexing_simp(RECD("K", KEYWORD_REGEX), list("false"))
-print lexing_simp(RECD("K", KEYWORD_REGEX), list("read"))
-print lexing_simp(RECD("K", KEYWORD_REGEX), list("write"))
 
 # Define regex for operations in language
 plus_regex = CHAR("+")
@@ -759,26 +623,8 @@ or_regex = SEQ(CHAR("|"), CHAR("|"))
 
 OPERATORS_REGEX = ALT(plus_regex, ALT(minus_regex, ALT(times_regex, ALT(divide_regex, ALT(modulus_regex, ALT(equality_regex, ALT(not_equal_regex, ALT(less_than_regex, ALT(greater_than_regex, ALT(less_than_equal_regex, ALT(greater_than_equal_regex, ALT(assign_regex, ALT(and_regex, or_regex)))))))))))))
 
-print lexing_simp(RECD("O", OPERATORS_REGEX), "+")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "-")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "*")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "/")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "%")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "==")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "!=")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "<")
-print lexing_simp(RECD("O", OPERATORS_REGEX), ">")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "<=")
-print lexing_simp(RECD("O", OPERATORS_REGEX), ">=")
-print lexing_simp(RECD("O", OPERATORS_REGEX), ":=")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "&&")
-print lexing_simp(RECD("O", OPERATORS_REGEX), "||")
-
 # Define regex for letters in language
 LETTERS_REGEX = RANGE("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-print lexing_simp(RECD("L", LETTERS_REGEX), "a")
-print lexing_simp(RECD("L", LETTERS_REGEX), "Z")
 
 # Define regex for symbols in language
 full_stop_regex = CHAR(".")
@@ -791,17 +637,6 @@ backslash_regex = CHAR("\\")
 
 SYMBOLS_REGEX = ALT(backslash_regex, ALT(comma_regex, ALT(semicolon_regex, ALT(colon_regex, ALT(underscore_regex, ALT(full_stop_regex, ALT(less_than_regex, ALT(greater_than_regex, ALT(LETTERS_REGEX, equal_regex)))))))))
 
-print lexing_simp(RECD("S", SYMBOLS_REGEX), ".")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), "_")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), ">")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), "<")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), "=")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), ";")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), ",")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), "\\")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), ":")
-print lexing_simp(RECD("S", SYMBOLS_REGEX), "a")
-
 # Define regex for parentheses in language
 left_parenthesis_regex = CHAR("(")
 right_parenthesis_regex = CHAR(")")
@@ -810,38 +645,19 @@ right_brace_regex = CHAR("}")
 
 PARENTHESES_REGEX = ALT(left_parenthesis_regex, ALT(right_parenthesis_regex, ALT(left_brace_regex, right_brace_regex)))
 
-print lexing_simp(RECD("P", PARENTHESES_REGEX), "(")
-print lexing_simp(RECD("P", PARENTHESES_REGEX), ")")
-print lexing_simp(RECD("P", PARENTHESES_REGEX), "{")
-print lexing_simp(RECD("P", PARENTHESES_REGEX), "}")
-
 # Define regex for numbers in language
 DIGITS_REGEX = RANGE("0123456789")
-
-print lexing_simp(RECD("D", DIGITS_REGEX), "0")
-print lexing_simp(RECD("D", DIGITS_REGEX), "9")
 
 # Define regex for whitespace in language
 WHITESPACE_REGEX = PLUS(RANGE(" \t\n"))
 
-print lexing_simp(RECD("W", WHITESPACE_REGEX), "     ")
-print lexing_simp(RECD("W", WHITESPACE_REGEX), "\t")
-print lexing_simp(RECD("W", WHITESPACE_REGEX), "\n")
-
 # Define regex for identifiers in language
 IDENTIFIER_REGEX = SEQ(LETTERS_REGEX, STAR(ALT(LETTERS_REGEX, ALT(DIGITS_REGEX, underscore_regex))))
-
-print lexing_simp(RECD("I", IDENTIFIER_REGEX), "ab_s_")
-print lexing_simp(RECD("I", IDENTIFIER_REGEX), "Zdw90_")
 
 # Define regex for numbers in language
 natual_numbers_regex = RANGE("123456789")
 
 NUMBERS_REGEX = ALT(CHAR("0"), SEQ(natual_numbers_regex, STAR(DIGITS_REGEX)))
-
-print lexing_simp(RECD("N", NUMBERS_REGEX), "0")
-print lexing_simp(RECD("N", NUMBERS_REGEX), "1")
-print lexing_simp(RECD("N", NUMBERS_REGEX), "903")
 
 # Define regex for strings in language
 speech_mark_regex = CHAR("\"")
@@ -849,15 +665,10 @@ newline_regex = SEQ(CHAR("\\"), CHAR("n"))
 
 STRING_REGEX = SEQ(speech_mark_regex, SEQ(STAR(ALT(SYMBOLS_REGEX, ALT(DIGITS_REGEX, ALT(PARENTHESES_REGEX, ALT(WHITESPACE_REGEX, newline_regex))))), speech_mark_regex))
 
-print lexing_simp(RECD("S", STRING_REGEX), "\"a\"")
-print lexing_simp(RECD("S", STRING_REGEX), "\"Hello World\\n\"")
-
 # Define regex for commennts in language
 forward_slashs_regex = SEQ(CHAR("/"), CHAR("/"))
 
-COMMENT_REGEX = SEQ(forward_slashs_regex, STAR(ALT(SYMBOLS_REGEX, ALT(DIGITS_REGEX, ALT(PARENTHESES_REGEX, ALT(WHITESPACE_REGEX, newline_regex))))))
-
-print lexing_simp(RECD("C", COMMENT_REGEX), "// a my e re ")
+COMMENT_REGEX = SEQ(forward_slashs_regex, SEQ(STAR(ALT(SYMBOLS_REGEX, ALT(CHAR(" "), ALT(PARENTHESES_REGEX, DIGITS_REGEX)))), CHAR("\n")))
 
 # Define records for the whole language
 KEYWORD_RECORD = RECD("k", KEYWORD_REGEX)
@@ -873,14 +684,6 @@ COMMENTS_RECORD = RECD("c", COMMENT_REGEX)
 # Define regex for the whole language
 LANGUAGE_REGEX = STAR(ALT(KEYWORD_RECORD, ALT(OPERATORS_RECORD, ALT(STRING_RECORD, ALT(PARANTHESES_RECORD, ALT(SEMICOLON_RECORD, ALT(WHITESPACE_RECORD, ALT(IDENTIFIER_RECORD, ALT(NUMBERS_RECORD, COMMENTS_RECORD)))))))))
 
-s = """
-while a == 0 {
-    a := a + 1
-};
-"""
-print lexing_simp(LANGUAGE_REGEX, s)
-# print lexing_simp(LANGUAGE_REGEX, "while a == 0")
-
 # Tokens
 class Token:
 
@@ -895,7 +698,7 @@ class T_KEYWORD(Token):
         self.s = s
 
     def __repr__(self):
-        return "T_KEYWORD(\"%s\")" % self.s
+        return "T_KEYWORD(%s)" % self.s
 
 class T_OP(Token):
     def __init__(self, s):
@@ -966,4 +769,26 @@ def tokenise(s):
             result.append(tk)
     return result  # Return list of Token objects
 
-print tokenise(s)
+# This code will not run in RPython, only used to test the tokenise function
+
+import os
+import time
+
+def read_file(file):
+    """Reads the content of a file from the 'examples' directory."""
+    path = os.path.join(os.getcwd(), "examples", file)
+    with open(path, "r") as f:
+        return f.read()
+
+def test(file):
+    contents = read_file(file)
+    print("Lex " + file + ": ")
+    start = time.time()
+    print(tokenise(contents))
+    end = time.time()
+
+    print("Time taken: " + str(end - start) + " seconds")
+
+if __name__ == "__main__":
+    filename = raw_input("Enter filename: ")  # For Python 2 / RPython
+    test(filename)
