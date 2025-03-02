@@ -1,10 +1,4 @@
 import sys
-import os
-
-# Add the python2_code directory to sys.path
-current_dir = os.path.dirname(__file__)
-python2_code_path = os.path.join(current_dir, '..', 'python2_code')
-sys.path.insert(0, os.path.abspath(python2_code_path))
 
 from lexer import lex
 

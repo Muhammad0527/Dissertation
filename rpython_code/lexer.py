@@ -1,5 +1,12 @@
-# Base class for all regular expressions
+# -*- coding: utf-8 -*-
+"""
+RPython-compatible lexer code for the WHILE language.
+Note: All classes that hold instance attributes now define __slots__.
+"""
+
 class Rexp:
+    __slots__ = ()  # No instance attributes in base class
+
     def __str__(self):
         return self.__repr__()
 
@@ -8,163 +15,163 @@ class Rexp:
 
 # Define various regex components as subclasses of Rexp
 class ZERO(Rexp):
-    pass
+    __slots__ = ()
 
 class ONE(Rexp):
-    pass
+    __slots__ = ()
 
 class CHAR(Rexp):
+    __slots__ = ('c',)
     def __init__(self, c):
         self.c = c
-
     def __repr__(self):
         return "CHAR(\"%s\")" % self.c
 
 class ALT(Rexp):
+    __slots__ = ('r1', 'r2')
     def __init__(self, r1, r2):
         self.r1 = r1
         self.r2 = r2
-
     def __repr__(self):
         return "ALT(%s, %s)" % (self.r1, self.r2)
 
 class SEQ(Rexp):
+    __slots__ = ('r1', 'r2')
     def __init__(self, r1, r2):
         self.r1 = r1
         self.r2 = r2
-
     def __repr__(self):
         return "SEQ(%s, %s)" % (self.r1, self.r2)
 
 class STAR(Rexp):
+    __slots__ = ('r',)
     def __init__(self, r):
         self.r = r
-
     def __repr__(self):
         return "STAR(%s)" % self.r
 
 class RANGE(Rexp):
+    __slots__ = ('cs',)
     def __init__(self, cs):
         self.cs = list(cs)
-
     def __repr__(self):
         return "RANGE(%s)" % self.cs
 
 class PLUS(Rexp):
+    __slots__ = ('r',)
     def __init__(self, r):
         self.r = r
-
     def __repr__(self):
         return "PLUS(%s)" % self.r
 
 class OPTIONAL(Rexp):
+    __slots__ = ('r',)
     def __init__(self, r):
         self.r = r
-
     def __repr__(self):
         return "OPTIONAL(%s)" % self.r
 
 class NTIMES(Rexp):
+    __slots__ = ('r', 'n')
     def __init__(self, r, n):
         self.r = r
         self.n = n
-
     def __repr__(self):
         return "NTIMES(%s, %d)" % (self.r, self.n)
 
 class RECD(Rexp):
+    __slots__ = ('x', 'r')
     def __init__(self, x, r):
         self.x = x
         self.r = r
-
     def __repr__(self):
         return "RECD(\"%s\", %s)" % (self.x, self.r)
 
 # Values for evaluation results
 class Val:
+    __slots__ = ()
     def __str__(self):
         return self.__repr__()
-
     def __repr__(self):
         return self.__class__.__name__
 
 class Empty(Val):
-    pass
+    __slots__ = ()
 
 class Chr(Val):
+    __slots__ = ('c',)
     def __init__(self, c):
         self.c = c
-
     def __repr__(self):
         return "Chr(\"%s\")" % self.c
 
 class Sequ(Val):
+    __slots__ = ('v1', 'v2')
     def __init__(self, v1, v2):
         self.v1 = v1
         self.v2 = v2
-
     def __repr__(self):
         return "Sequ(%s, %s)" % (self.v1, self.v2)
 
 class Left(Val):
+    __slots__ = ('v',)
     def __init__(self, v):
         self.v = v
-
     def __repr__(self):
         return "Left(%s)" % self.v
 
 class Right(Val):
+    __slots__ = ('v',)
     def __init__(self, v):
         self.v = v
-
     def __repr__(self):
         return "Right(%s)" % self.v
 
 class Stars(Val):
+    __slots__ = ('vs',)
     def __init__(self, vs):
         self.vs = vs
-
     def __repr__(self):
         return "Stars(%s)" % self.vs
 
 class Rng(Val):
+    __slots__ = ('cs',)
     def __init__(self, cs):
         self.cs = cs
-
     def __repr__(self):
         return "Rng(\"%s\")" % self.cs
 
 class Pls(Val):
+    __slots__ = ('vs',)
     def __init__(self, vs):
         self.vs = vs
-
     def __repr__(self):
         return "Pls(%s)" % self.vs
 
 class Opt(Val):
+    __slots__ = ('v',)
     def __init__(self, v):
         self.v = v
-
     def __repr__(self):
         return "Opt(%s)" % self.v
 
 class Ntms(Val):
+    __slots__ = ('vs',)
     def __init__(self, vs):
         self.vs = vs
-
     def __repr__(self):
         return "Ntms(%s)" % self.vs
 
 class Rec(Val):
+    __slots__ = ('x', 'v')
     def __init__(self, x, v):
         self.x = x
         self.v = v
-
     def __repr__(self):
         return "Rec(\"%s\", %s)" % (self.x, self.v)
 
 def eq_rexp(r1, r2):
-    # Checks whether two regular expressions r1 and r2 have the same structure
+    # Structural equality of regular expressions
     if isinstance(r1, ZERO) and isinstance(r2, ZERO):
         return True
     if isinstance(r1, ONE) and isinstance(r2, ONE):
@@ -178,7 +185,6 @@ def eq_rexp(r1, r2):
     if isinstance(r1, STAR) and isinstance(r2, STAR):
         return eq_rexp(r1.r, r2.r)
     if isinstance(r1, RANGE) and isinstance(r2, RANGE):
-        # compare elements one by one; RPython needs simple loops
         if len(r1.cs) != len(r2.cs):
             return False
         for i in range(len(r1.cs)):
@@ -195,11 +201,9 @@ def eq_rexp(r1, r2):
         if r1.x != r2.x:
             return False
         return eq_rexp(r1.r, r2.r)
-
-    # If none of the above matched, they're not equal structurally
     return False
 
-
+# Checks if a regular expression matches the empty string
 def nullable(r):
     if isinstance(r, ZERO):
         return False
@@ -226,54 +230,48 @@ def nullable(r):
             return nullable(r.r)
     elif isinstance(r, RECD):
         return nullable(r.r)
+    else:
+        raise Exception("Unknown regular expression type")
 
-
+# Derivative of a regular expression with respect to a character
 def der(c, r):
     if isinstance(r, ZERO):
         return ZERO()
-    
     elif isinstance(r, ONE):
         return ZERO()
-    
     elif isinstance(r, CHAR):
         if r.c == c:
             return ONE()
         else:
             return ZERO()
-    
     elif isinstance(r, ALT):
         return ALT(der(c, r.r1), der(c, r.r2))
-    
     elif isinstance(r, SEQ):
         if nullable(r.r1):
             return ALT(SEQ(der(c, r.r1), r.r2), der(c, r.r2))
         else:
             return SEQ(der(c, r.r1), r.r2)
-    
     elif isinstance(r, STAR):
         return SEQ(der(c, r.r), STAR(r.r))
-    
     elif isinstance(r, RANGE):
         if c in r.cs:
             return ONE()
         else:
             return ZERO()
-    
     elif isinstance(r, PLUS):
         return SEQ(der(c, r.r), STAR(r.r))
-    
     elif isinstance(r, OPTIONAL):
         return der(c, r.r)
-    
     elif isinstance(r, NTIMES):
         if r.n == 0:
             return ZERO()
         else:
             return SEQ(der(c, r.r), NTIMES(r.r, r.n - 1))
-    
     elif isinstance(r, RECD):
         return der(c, r.r)
-    
+    else:
+        raise Exception("Unknown regular expression type")
+
 def regex_to_string(r):
     if isinstance(r, ZERO):
         return None
@@ -297,13 +295,16 @@ def regex_to_string(r):
         return "%s{%d}" % (regex_to_string(r.r), r.n)
     elif isinstance(r, RECD):
         return "%s" % regex_to_string(r.r)
+    else:
+        raise Exception("Unknown regular expression type")
 
+# Derivative of a regular expression with respect to a string
 def ders(r, s):
     if not s:
         return r
     else:
         return ders(der(s[0], r), s[1:])
-    
+
 def size(r):
     if isinstance(r, ZERO) or isinstance(r, ONE):
         return 1
@@ -325,6 +326,8 @@ def size(r):
         return 1 + size(r.r)
     elif isinstance(r, RECD):
         return 1 + size(r.r)
+    else:
+        raise Exception("Unknown regular expression type")
 
 # Flatten function to convert a value to a string
 def flatten(v):
@@ -363,237 +366,221 @@ def flatten(v):
         return result
     elif isinstance(v, Rec):
         return flatten(v.v)
+    else:
+        raise Exception("Unknown value type")
 
+# Environment function to extract the values from a value
 def env(v):
     if isinstance(v, Empty):
         return []
-    
     elif isinstance(v, Chr):
-        # Characters alone do not produce environment bindings
         return []
-    
     elif isinstance(v, Left):
         return env(v.v)
-    
     elif isinstance(v, Right):
         return env(v.v)
-    
     elif isinstance(v, Sequ):
-        # Concatenate results from both parts of the sequence
         return env(v.v1) + env(v.v2)
-    
     elif isinstance(v, Stars):
-        # Collect results from each value in the list of stars
         result = []
         for val in v.vs:
             result += env(val)
         return result
-    
     elif isinstance(v, Rng):
-        # Range does not produce bindings directly
         return []
-    
     elif isinstance(v, Pls):
-        # Collect results from each value in the list of plus expressions
         result = []
         for val in v.vs:
             result += env(val)
         return result
-    
     elif isinstance(v, Opt):
-        # Optional expression contributes bindings if it has content
         return env(v.v)
-    
     elif isinstance(v, Ntms):
-        # Collect results from each value in the list of n-times expressions
         result = []
         for val in v.vs:
             result += env(val)
         return result
-    
     elif isinstance(v, Rec):
-        # Captured expressions produce a binding with their name and value
         return [(v.x, flatten(v.v))] + env(v.v)
+    else:
+        raise Exception("Unknown value type")
 
+# Make epsilon function to compute HOW a regular expression matches the empty string
 def mkeps(r):
     if isinstance(r, ONE):
         return Empty()
-    
     elif isinstance(r, ALT):
         if nullable(r.r1):
             return Left(mkeps(r.r1))
         else:
             return Right(mkeps(r.r2))
-    
     elif isinstance(r, SEQ):
         return Sequ(mkeps(r.r1), mkeps(r.r2))
-    
     elif isinstance(r, STAR):
         return Stars([])
-    
     elif isinstance(r, PLUS):
         return Pls([mkeps(r.r)])
-    
     elif isinstance(r, OPTIONAL):
-        return Opt((Empty()))
-    
+        return Opt(Empty())
     elif isinstance(r, NTIMES):
         if r.n == 0:
-            return Ntms(list())
-        
+            return Ntms([])
         return Ntms([mkeps(r.r)])
-    
     elif isinstance(r, RECD):
         return Rec(r.x, mkeps(r.r))
+    else:
+        raise Exception("Unknown regular expression type")
 
+# Injection function to compute HOW a regular expression matches a string
 def inj(r, c, v):
-    if isinstance(r, STAR) and isinstance(v, Sequ):
-        # STAR: add the injected value to the list in Stars
-        return Stars([inj(r.r, c, v.v1)] + v.v2.vs)
-    
+    if isinstance(r, STAR):
+        sequ = v
+        assert isinstance(sequ, Sequ)
+        star = sequ.v2
+        assert isinstance(star, Stars)
+        return Stars([inj(r.r, c, sequ.v1)] + star.vs)
     elif isinstance(r, SEQ):
-        # SEQ: inject the character into the first part if possible
         if isinstance(v, Sequ):
-           return Sequ(inj(r.r1, c, v.v1), v.v2)
-        elif isinstance(v, Left):  # When SEQ has nullable first part
-            return Sequ(inj(r.r1, c, v.v.v1), v.v.v2)
+            return Sequ(inj(r.r1, c, v.v1), v.v2)
+        elif isinstance(v, Left):
+            seq = v.v
+            assert isinstance(seq, Sequ)
+            return Sequ(inj(r.r1, c, seq.v1), seq.v2)
         elif isinstance(v, Right):
             return Sequ(mkeps(r.r1), inj(r.r2, c, v.v))
-    
     elif isinstance(r, ALT):
-        # ALT: inject into the Left or Right based on the value type
         if isinstance(v, Left):
             return Left(inj(r.r1, c, v.v))
         elif isinstance(v, Right):
             return Right(inj(r.r2, c, v.v))
-    
     elif isinstance(r, CHAR):
-        # CHAR: represent the character with a Chr value
         return Chr(c)
-    
-    # New cases for the extended regular expressions:
-    
     elif isinstance(r, RANGE):
-        # RANGE: simply return the character as Chr if it matches
         return Chr(c)
-    
     elif isinstance(r, PLUS):
-        # PLUS: inject into the repeated part and add it to Pls list
         if isinstance(v, Sequ):
-            return Pls([inj(r.r, c, v.v1)] + v.v2.vs)
-    
+            star = v.v2
+            assert isinstance(star, Stars)
+            return Pls([inj(r.r, c, v.v1)] + star.vs)
     elif isinstance(r, OPTIONAL):
-        # OPTIONAL: wrap the injected character in Opt
         return Opt(inj(r.r, c, v))
-    
     elif isinstance(r, NTIMES):
-        # NTIMES: inject into the specified number of times
         if isinstance(v, Sequ):
+            assert isinstance(v.v2, Ntms)
             return Ntms([inj(r.r, c, v.v1)] + v.v2.vs)
-    
     elif isinstance(r, RECD):
-        # RECD: inject within the recorded regular expression
         return Rec(r.x, inj(r.r, c, v))
+    else:
+        raise Exception("Unknown regular expression type")
 
-# Functions translated to RPython
-def F_ID(v):
-    return v
+# Rectification tags
 
-def F_RIGHT(f):
-    def result(v):
-        return Right(f(v))
-    return result
+TAG_ID          = 0
+TAG_RIGHT       = 1
+TAG_LEFT        = 2
+TAG_ALT         = 3
+TAG_SEQ         = 4
+TAG_SEQ_EMPTY1  = 5
+TAG_SEQ_EMPTY2  = 6
+TAG_ERROR       = 7
+TAG_RECD        = 8
 
-def F_LEFT(f):
-    def result(v):
-        return Left(f(v))
-    return result
+class RectFun(object):
+    __slots__ = ('tag', 'sub1', 'sub2')
+    def __init__(self, tag, sub1=None, sub2=None):
+        self.tag = tag
+        self.sub1 = sub1
+        self.sub2 = sub2
 
-def F_ALT(f1, f2):
-    def result(v):
-        if isinstance(v, Right):
-            return Right(f2(v.v))
-        elif isinstance(v, Left):
-            return Left(f1(v.v))
+def apply_rectfun(rf, v):
+    t = rf.tag
+    if t == TAG_ID:
+        return v
+    elif t == TAG_RIGHT:
+        return Right(apply_rectfun(rf.sub1, v))
+    elif t == TAG_LEFT:
+        return Left(apply_rectfun(rf.sub1, v))
+    elif t == TAG_ALT:
+        if isinstance(v, Left):
+            return Left(apply_rectfun(rf.sub1, v.v))
+        elif isinstance(v, Right):
+            return Right(apply_rectfun(rf.sub2, v.v))
         else:
-            raise Exception("Invalid type for F_ALT")
-    return result
+            raise Exception("Invalid value for TAG_ALT")
+    elif t == TAG_SEQ:
+        if not isinstance(v, Sequ):
+            raise Exception("Invalid value for TAG_SEQ (expected Sequ)")
+        v1r = apply_rectfun(rf.sub1, v.v1)
+        v2r = apply_rectfun(rf.sub2, v.v2)
+        return Sequ(v1r, v2r)
+    elif t == TAG_SEQ_EMPTY1:
+        empty_part = apply_rectfun(rf.sub1, Empty())
+        v2r = apply_rectfun(rf.sub2, v)
+        return Sequ(empty_part, v2r)
+    elif t == TAG_SEQ_EMPTY2:
+        empty_part = apply_rectfun(rf.sub2, Empty())
+        v1r = apply_rectfun(rf.sub1, v)
+        return Sequ(v1r, empty_part)
+    elif t == TAG_ERROR:
+        raise Exception("error")
+    elif t == TAG_RECD:
+        if not isinstance(v, Rec):
+            raise Exception("Invalid value for TAG_RECD (expected Rec)")
+        v_inner = apply_rectfun(rf.sub1, v.v)
+        return Rec(v.x, v_inner)
+    else:
+        raise Exception("Unknown rectification tag")
 
-def F_SEQ(f1, f2):
-    def result(v):
-        if isinstance(v, Sequ):
-            return Sequ(f1(v.v1), f2(v.v2))
-        else:
-            raise Exception("Invalid type for F_SEQ")
-    return result
-
-def F_SEQ_Empty1(f1, f2):
-    def result(v):
-        return Sequ(f1(Empty()), f2(v))
-    return result
-
-def F_SEQ_Empty2(f1, f2):
-    def result(v):
-        return Sequ(f1(v), f2(Empty()))
-    return result
-
-def F_RECD(f):
-    def result(v):
-        if isinstance(v, Rec):
-            return Rec(v.x, f(v.value))
-        else:
-            raise Exception("Invalid type for F_RECD")
-    return result
-
-def F_ERROR(v):
-    raise Exception("error")
+# Simplification function
 
 def simp(r):
     if isinstance(r, ALT):
-        # Recursively simplify ALT components
         r1s, f1s = simp(r.r1)
         r2s, f2s = simp(r.r2)
         if isinstance(r1s, ZERO):
-            return r2s, F_RIGHT(f2s)
+            return (r2s, RectFun(TAG_RIGHT, f2s))
         elif isinstance(r2s, ZERO):
-            return r1s, F_LEFT(f1s)
+            return (r1s, RectFun(TAG_LEFT, f1s))
         elif eq_rexp(r1s, r2s):
-            return r1s, F_LEFT(f1s)
+            return (r1s, RectFun(TAG_LEFT, f1s))
         else:
-            return ALT(r1s, r2s), F_ALT(f1s, f2s)
-
+            return (ALT(r1s, r2s), RectFun(TAG_ALT, f1s, f2s))
     elif isinstance(r, SEQ):
-        # Recursively simplify SEQ components
         r1s, f1s = simp(r.r1)
         r2s, f2s = simp(r.r2)
         if isinstance(r1s, ZERO) or isinstance(r2s, ZERO):
-            return ZERO(), F_ERROR
+            return (ZERO(), RectFun(TAG_ERROR))
         elif isinstance(r1s, ONE):
-            return r2s, F_SEQ_Empty1(f1s, f2s)
+            return (r2s, RectFun(TAG_SEQ_EMPTY1, f1s, f2s))
         elif isinstance(r2s, ONE):
-            return r1s, F_SEQ_Empty2(f1s, f2s)
+            return (r1s, RectFun(TAG_SEQ_EMPTY2, f1s, f2s))
         else:
-            return SEQ(r1s, r2s), F_SEQ(f1s, f2s)
-
+            return (SEQ(r1s, r2s), RectFun(TAG_SEQ, f1s, f2s))
     else:
-        # For other types, return as is with F_ID
-        return (r, F_ID)
+        return (r, RectFun(TAG_ID))
 
+# Lexing function
 def lex_simp(r, s):
-    if not s:  # If the list is empty
+    if not s:
         if nullable(r):
             return mkeps(r)
         else:
-            raise Exception("lexing error") 
+            raise Exception("lexing error")
     else:
-        c, cs = s[0], s[1:]
-        r_simp, f_simp = simp(der(c, r))  # Calculate the derivative and simplify
-        return inj(r, c, f_simp(lex_simp(r_simp, cs)))  # Recursively call lex_simp
+        c = s[0]
+        cs = s[1:]
+        r_simp, rf_simp = simp(der(c, r))
+        val_sub = lex_simp(r_simp, cs)
+        rect_val = apply_rectfun(rf_simp, val_sub)
+        return inj(r, c, rect_val)
 
 def lexing_simp(r, s):
-    return env(lex_simp(r, list(s)))
+    val_result = lex_simp(r, list(s))
+    return env(val_result)
 
-# Define regex for keywords in language
+# Regular Expressions for the WHILE language
+
+# Keywords
 while_regex = SEQ(CHAR("w"), SEQ(CHAR("h"), SEQ(CHAR("i"), SEQ(CHAR("l"), CHAR("e")))))
 if_regex = SEQ(CHAR("i"), CHAR("f"))
 else_regex = SEQ(CHAR("e"), SEQ(CHAR("l"), SEQ(CHAR("s"), CHAR("e"))))
@@ -605,7 +592,7 @@ write_regex = SEQ(CHAR("w"), SEQ(CHAR("r"), SEQ(CHAR("i"), SEQ(CHAR("t"), CHAR("
 
 KEYWORD_REGEX = ALT(while_regex, ALT(if_regex, ALT(then_regex, ALT(else_regex, ALT(true_regex, ALT(false_regex, ALT(read_regex, write_regex)))))))
 
-# Define regex for operations in language
+# Operators
 plus_regex = CHAR("+")
 minus_regex = CHAR("-")
 times_regex = CHAR("*")
@@ -623,10 +610,8 @@ or_regex = SEQ(CHAR("|"), CHAR("|"))
 
 OPERATORS_REGEX = ALT(plus_regex, ALT(minus_regex, ALT(times_regex, ALT(divide_regex, ALT(modulus_regex, ALT(equality_regex, ALT(not_equal_regex, ALT(less_than_regex, ALT(greater_than_regex, ALT(less_than_equal_regex, ALT(greater_than_equal_regex, ALT(assign_regex, ALT(and_regex, or_regex)))))))))))))
 
-# Define regex for letters in language
+# Letters and Symbols
 LETTERS_REGEX = RANGE("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-# Define regex for symbols in language
 full_stop_regex = CHAR(".")
 comma_regex = CHAR(",")
 semicolon_regex = CHAR(";")
@@ -637,7 +622,7 @@ backslash_regex = CHAR("\\")
 
 SYMBOLS_REGEX = ALT(backslash_regex, ALT(comma_regex, ALT(semicolon_regex, ALT(colon_regex, ALT(underscore_regex, ALT(full_stop_regex, ALT(less_than_regex, ALT(greater_than_regex, ALT(LETTERS_REGEX, equal_regex)))))))))
 
-# Define regex for parentheses in language
+# Parentheses
 left_parenthesis_regex = CHAR("(")
 right_parenthesis_regex = CHAR(")")
 left_brace_regex = CHAR("{")
@@ -645,32 +630,27 @@ right_brace_regex = CHAR("}")
 
 PARENTHESES_REGEX = ALT(left_parenthesis_regex, ALT(right_parenthesis_regex, ALT(left_brace_regex, right_brace_regex)))
 
-# Define regex for numbers in language
+# Numbers
 DIGITS_REGEX = RANGE("0123456789")
-
-# Define regex for whitespace in language
-WHITESPACE_REGEX = PLUS(RANGE(" \t\n"))
-
-# Define regex for identifiers in language
-IDENTIFIER_REGEX = SEQ(LETTERS_REGEX, STAR(ALT(LETTERS_REGEX, ALT(DIGITS_REGEX, underscore_regex))))
-
-# Define regex for numbers in language
 natual_numbers_regex = RANGE("123456789")
-
 NUMBERS_REGEX = ALT(CHAR("0"), SEQ(natual_numbers_regex, STAR(DIGITS_REGEX)))
 
-# Define regex for strings in language
+# Whitespace
+WHITESPACE_REGEX = PLUS(RANGE(" \t\n"))
+
+# Identifiers
+IDENTIFIER_REGEX = SEQ(LETTERS_REGEX, STAR(ALT(LETTERS_REGEX, ALT(DIGITS_REGEX, underscore_regex))))
+
+# Strings
 speech_mark_regex = CHAR("\"")
 newline_regex = SEQ(CHAR("\\"), CHAR("n"))
-
 STRING_REGEX = SEQ(speech_mark_regex, SEQ(STAR(ALT(SYMBOLS_REGEX, ALT(DIGITS_REGEX, ALT(PARENTHESES_REGEX, ALT(WHITESPACE_REGEX, newline_regex))))), speech_mark_regex))
 
-# Define regex for commennts in language
+# Comments
 forward_slashs_regex = SEQ(CHAR("/"), CHAR("/"))
-
 COMMENT_REGEX = SEQ(forward_slashs_regex, SEQ(STAR(ALT(SYMBOLS_REGEX, ALT(CHAR(" "), ALT(PARENTHESES_REGEX, DIGITS_REGEX)))), CHAR("\n")))
 
-# Define records for the whole language
+# Records for language tokens
 KEYWORD_RECORD = RECD("k", KEYWORD_REGEX)
 OPERATORS_RECORD = RECD("o", OPERATORS_REGEX)
 STRING_RECORD = RECD("str", STRING_REGEX)
@@ -681,65 +661,67 @@ IDENTIFIER_RECORD = RECD("i", IDENTIFIER_REGEX)
 NUMBERS_RECORD = RECD("n", NUMBERS_REGEX)
 COMMENTS_RECORD = RECD("c", COMMENT_REGEX)
 
-# Define regex for the whole language
 LANGUAGE_REGEX = STAR(ALT(KEYWORD_RECORD, ALT(OPERATORS_RECORD, ALT(STRING_RECORD, ALT(PARANTHESES_RECORD, ALT(SEMICOLON_RECORD, ALT(WHITESPACE_RECORD, ALT(IDENTIFIER_RECORD, ALT(NUMBERS_RECORD, COMMENTS_RECORD)))))))))
 
-# Tokens
-class Token:
+# Token classes
 
+class Token:
+    __slots__ = ()
     def __str__(self):
         return self.__repr__()
-    
     def __repr__(self):
         return self.__class__.__name__
 
 class T_KEYWORD(Token):
+    __slots__ = ('s',)
     def __init__(self, s):
         self.s = s
-
     def __repr__(self):
         return "T_KEYWORD(%s)" % self.s
 
 class T_OP(Token):
+    __slots__ = ('s',)
     def __init__(self, s):
         self.s = s
-
     def __repr__(self):
         return "T_OP(%s)" % self.s
 
 class T_STRING(Token):
+    __slots__ = ('s',)
     def __init__(self, s):
         self.s = s
-
     def __repr__(self):
         return "T_STRING(%s)" % self.s
 
 class T_PAREN(Token):
+    __slots__ = ('s',)
     def __init__(self, s):
         self.s = s
-
     def __repr__(self):
         return "T_PAREN(%s)" % self.s
 
 class T_SEMI(Token):
+    __slots__ = ()
     def __init__(self):
         pass
+    def __repr__(self):
+        return "T_SEMI"
 
 class T_ID(Token):
+    __slots__ = ('s',)
     def __init__(self, s):
         self.s = s
-
     def __repr__(self):
         return "T_ID(%s)" % self.s
 
 class T_NUM(Token):
+    __slots__ = ('n',)
     def __init__(self, n):
-        self.n = int(n)  # Ensure integer conversion
-
+        self.n = int(n)
     def __repr__(self):
         return "T_NUM(%d)" % self.n
 
-
+# Tokenise function
 def token(pair):
     kind, value = pair
     if kind == "k":
@@ -751,44 +733,57 @@ def token(pair):
     elif kind == "p":
         return T_PAREN(value)
     elif kind == "s":
-        return T_SEMI()  # No argument, singleton class
+        return T_SEMI()
     elif kind == "i":
         return T_ID(value)
     elif kind == "n":
-        return T_NUM(value)  # Convert to integer
+        return T_NUM(value)
     else:
         return None
-
 
 def tokenise(s):
     lexed = lexing_simp(LANGUAGE_REGEX, s)
     result = []
     for pair in lexed:
         tk = token(pair)
-        if tk != None:
+        if tk is not None:
             result.append(tk)
-    return result  # Return list of Token objects
+    return result
 
-# This code will not run in RPython, only used to test the tokenise function
+# Main Lexer Function
 
 import os
 import time
 
+
+# For RPython since it does not call the __repr__ method by default
+def print_tokens(tokens):
+    s = "["
+    first = True
+    for token in tokens:
+        if not first:
+            s += ", "
+        else:
+            first = False
+        # Explicitly call the __repr__ method on each token
+        s += token.__repr__()
+    s += "]"
+    return s
+
 def read_file(file):
-    """Reads the content of a file from the 'examples' directory."""
-    path = os.path.join(os.getcwd(), "examples", file)
-    with open(path, "r") as f:
-        return f.read()
+    cwd = os.getcwd()
+    path = os.path.join(os.path.join(cwd, "examples"), file)
+    f = open(path, "r")
+    content = f.read()
+    f.close()
+    return content
 
-def test(file):
-    contents = read_file(file)
-    print("Lex " + file + ": ")
+def lex(filename):
+    contents = read_file(filename)
+    print("Lex " + filename + ":")
     start = time.time()
-    print(tokenise(contents))
+    tokens = tokenise(contents)
+    print(print_tokens(tokens))
     end = time.time()
-
     print("Time taken: " + str(end - start) + " seconds")
-
-if __name__ == "__main__":
-    filename = raw_input("Enter filename: ")  # For Python 2 / RPython
-    test(filename)
+    return tokens
