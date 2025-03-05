@@ -14,7 +14,7 @@ def main(argv=None):
         return 1
 
     filename = argv[1]
-    lex(filename)  # Pass the filename into your lex() function
+    tokens = lex(filename)  
     return 0
 
 if __name__ == "__main__":

@@ -259,4 +259,12 @@
 # print lexing_simp(LANGUAGE_REGEX, c)
 # print lexing_simp(LANGUAGE_REGEX, "while a == 0")
 
+# print T_KEYWORD("if") == T_KEYWORD("if")  # True
+# print T_OP("+") == T_OP("+")  # True
+# print T_STRING("hello") == T_STRING("hello")  # True
+# print T_PAREN("(") == T_PAREN("(")  # True
+# print T_ID("x") == T_ID("x")  # True
+# print T_NUM(10) == T_NUM(10)  # True
+# print T_SEMI() == T_SEMI()  # True
+
 # print tokenise(c)

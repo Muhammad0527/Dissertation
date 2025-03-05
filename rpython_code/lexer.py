@@ -22,76 +22,96 @@ class ONE(Rexp):
 
 class CHAR(Rexp):
     __slots__ = ('c',)
+
     def __init__(self, c):
         self.c = c
+
     def __repr__(self):
         return "CHAR(\"%s\")" % self.c
 
 class ALT(Rexp):
     __slots__ = ('r1', 'r2')
+
     def __init__(self, r1, r2):
         self.r1 = r1
         self.r2 = r2
+
     def __repr__(self):
         return "ALT(%s, %s)" % (self.r1, self.r2)
 
 class SEQ(Rexp):
     __slots__ = ('r1', 'r2')
+
     def __init__(self, r1, r2):
         self.r1 = r1
         self.r2 = r2
+
     def __repr__(self):
         return "SEQ(%s, %s)" % (self.r1, self.r2)
 
 class STAR(Rexp):
     __slots__ = ('r',)
+
     def __init__(self, r):
         self.r = r
+
     def __repr__(self):
         return "STAR(%s)" % self.r
 
 class RANGE(Rexp):
     __slots__ = ('cs',)
+
     def __init__(self, cs):
         self.cs = list(cs)
+
     def __repr__(self):
         return "RANGE(%s)" % self.cs
 
 class PLUS(Rexp):
     __slots__ = ('r',)
+
     def __init__(self, r):
         self.r = r
+
     def __repr__(self):
         return "PLUS(%s)" % self.r
 
 class OPTIONAL(Rexp):
     __slots__ = ('r',)
+
     def __init__(self, r):
         self.r = r
+
     def __repr__(self):
         return "OPTIONAL(%s)" % self.r
 
 class NTIMES(Rexp):
     __slots__ = ('r', 'n')
+
     def __init__(self, r, n):
         self.r = r
         self.n = n
+
     def __repr__(self):
         return "NTIMES(%s, %d)" % (self.r, self.n)
 
 class RECD(Rexp):
     __slots__ = ('x', 'r')
+
     def __init__(self, x, r):
         self.x = x
         self.r = r
+
     def __repr__(self):
         return "RECD(\"%s\", %s)" % (self.x, self.r)
 
 # Values for evaluation results
 class Val:
     __slots__ = ()
+
     def __str__(self):
         return self.__repr__()
+    
     def __repr__(self):
         return self.__class__.__name__
 
@@ -100,73 +120,93 @@ class Empty(Val):
 
 class Chr(Val):
     __slots__ = ('c',)
+
     def __init__(self, c):
         self.c = c
+
     def __repr__(self):
         return "Chr(\"%s\")" % self.c
 
 class Sequ(Val):
     __slots__ = ('v1', 'v2')
+
     def __init__(self, v1, v2):
         self.v1 = v1
         self.v2 = v2
+
     def __repr__(self):
         return "Sequ(%s, %s)" % (self.v1, self.v2)
 
 class Left(Val):
     __slots__ = ('v',)
+
     def __init__(self, v):
         self.v = v
+
     def __repr__(self):
         return "Left(%s)" % self.v
 
 class Right(Val):
     __slots__ = ('v',)
+
     def __init__(self, v):
         self.v = v
+
     def __repr__(self):
         return "Right(%s)" % self.v
 
 class Stars(Val):
     __slots__ = ('vs',)
+
     def __init__(self, vs):
         self.vs = vs
+
     def __repr__(self):
         return "Stars(%s)" % self.vs
 
 class Rng(Val):
     __slots__ = ('cs',)
+
     def __init__(self, cs):
         self.cs = cs
+
     def __repr__(self):
         return "Rng(\"%s\")" % self.cs
 
 class Pls(Val):
     __slots__ = ('vs',)
+
     def __init__(self, vs):
         self.vs = vs
+
     def __repr__(self):
         return "Pls(%s)" % self.vs
 
 class Opt(Val):
     __slots__ = ('v',)
+
     def __init__(self, v):
         self.v = v
+
     def __repr__(self):
         return "Opt(%s)" % self.v
 
 class Ntms(Val):
     __slots__ = ('vs',)
+
     def __init__(self, vs):
         self.vs = vs
+
     def __repr__(self):
         return "Ntms(%s)" % self.vs
 
 class Rec(Val):
     __slots__ = ('x', 'v')
+
     def __init__(self, x, v):
         self.x = x
         self.v = v
+
     def __repr__(self):
         return "Rec(\"%s\", %s)" % (self.x, self.v)
 
@@ -667,59 +707,93 @@ LANGUAGE_REGEX = STAR(ALT(KEYWORD_RECORD, ALT(OPERATORS_RECORD, ALT(STRING_RECOR
 
 class Token:
     __slots__ = ()
+
     def __str__(self):
         return self.__repr__()
+    
     def __repr__(self):
         return self.__class__.__name__
 
 class T_KEYWORD(Token):
     __slots__ = ('s',)
+
     def __init__(self, s):
         self.s = s
+
     def __repr__(self):
         return "T_KEYWORD(%s)" % self.s
 
 class T_OP(Token):
     __slots__ = ('s',)
+
     def __init__(self, s):
         self.s = s
+
     def __repr__(self):
         return "T_OP(%s)" % self.s
-
+    
 class T_STRING(Token):
     __slots__ = ('s',)
+
     def __init__(self, s):
         self.s = s
+
     def __repr__(self):
         return "T_STRING(%s)" % self.s
 
 class T_PAREN(Token):
     __slots__ = ('s',)
+
     def __init__(self, s):
         self.s = s
+
     def __repr__(self):
         return "T_PAREN(%s)" % self.s
 
 class T_SEMI(Token):
     __slots__ = ()
+
     def __init__(self):
         pass
+
     def __repr__(self):
         return "T_SEMI"
 
 class T_ID(Token):
     __slots__ = ('s',)
+
     def __init__(self, s):
         self.s = s
+
     def __repr__(self):
         return "T_ID(%s)" % self.s
 
 class T_NUM(Token):
     __slots__ = ('n',)
+
     def __init__(self, n):
         self.n = int(n)
+
     def __repr__(self):
         return "T_NUM(%d)" % self.n
+    
+def eq_token(t1, t2):
+    if isinstance(t1, T_KEYWORD) and isinstance(t2, T_KEYWORD):
+        return t1.s == t2.s
+    elif isinstance(t1, T_OP) and isinstance(t2, T_OP):
+        return t1.s == t2.s
+    elif isinstance(t1, T_STRING) and isinstance(t2, T_STRING):
+        return t1.s == t2.s
+    elif isinstance(t1, T_PAREN) and isinstance(t2, T_PAREN):
+        return t1.s == t2.s
+    elif isinstance(t1, T_SEMI) and isinstance(t2, T_SEMI):
+        return True
+    elif isinstance(t1, T_ID) and isinstance(t2, T_ID):
+        return t1.s == t2.s
+    elif isinstance(t1, T_NUM) and isinstance(t2, T_NUM):
+        return t1.n == t2.n
+    else:
+        return False
 
 # Tokenise function
 def token(pair):
@@ -783,7 +857,7 @@ def lex(filename):
     print("Lex " + filename + ":")
     start = time.time()
     tokens = tokenise(contents)
-    print(print_tokens(tokens))
     end = time.time()
-    print("Time taken: " + str(end - start) + " seconds")
+    print(print_tokens(tokens))
+    print("Lexing Time taken: " + str(end - start) + " seconds")
     return tokens

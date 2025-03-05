@@ -692,6 +692,12 @@ class Token:
     
     def __repr__(self):
         return self.__class__.__name__
+    
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+    
+    def __hash__(self):
+        return hash(tuple(sorted(self.__dict__.items())))
 
 class T_KEYWORD(Token):
     def __init__(self, s):
