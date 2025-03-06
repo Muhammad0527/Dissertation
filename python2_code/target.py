@@ -5,12 +5,10 @@ from lexer import lex
 from parser import parse_program
 
 def read_file(file):
-    cwd = os.getcwd()
-    path = os.path.join(os.path.join(cwd, "examples"), file)
-    f = open(path, "r")
-    content = f.read()
-    f.close()
-    return content
+    """Reads the content of a file from the 'examples' directory."""
+    path = os.path.join(os.getcwd(), "examples", file)
+    with open(path, "r") as f:
+        return f.read()
 
 def target(driver, args):
     return main, None

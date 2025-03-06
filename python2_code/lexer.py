@@ -777,26 +777,15 @@ def tokenise(s):
             result.append(tk)
     return result  # Return list of Token objects
 
-# This code will not run in RPython, only used to test the tokenise function
+# lex a file
 
-import os
 import time
 
-def read_file(file):
-    """Reads the content of a file from the 'examples' directory."""
-    path = os.path.join(os.getcwd(), "examples", file)
-    with open(path, "r") as f:
-        return f.read()
-
-def test(file):
-    contents = read_file(file)
-    print("Lex " + file + ": ")
+def lex(contents):
+    print("Lexed:")
     start = time.time()
-    print(tokenise(contents))
+    tokens = tokenise(contents)
     end = time.time()
-
-    print("Time taken: " + str(end - start) + " seconds")
-
-if __name__ == "__main__":
-    filename = raw_input("Enter filename: ")  # For Python 2 / RPython
-    test(filename)
+    print(tokens)
+    print("Lexing Time taken: " + str(end - start) + " seconds")
+    return tokens

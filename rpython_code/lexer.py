@@ -836,9 +836,7 @@ def tokenise(s):
 
 # Main Lexer Function
 
-import os
 import time
-
 
 # For RPython since it does not call the __repr__ method by default
 def print_tokens(tokens):
@@ -854,17 +852,8 @@ def print_tokens(tokens):
     s += "]"
     return s
 
-def read_file(file):
-    cwd = os.getcwd()
-    path = os.path.join(os.path.join(cwd, "examples"), file)
-    f = open(path, "r")
-    content = f.read()
-    f.close()
-    return content
-
-def lex(filename):
-    contents = read_file(filename)
-    print("Lex " + filename + ":")
+def lex(contents):
+    print("Lex:")
     start = time.time()
     tokens = tokenise(contents)
     end = time.time()
