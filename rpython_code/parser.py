@@ -3,12 +3,25 @@ from lexer import T_ID, T_OP, T_NUM, T_SEMI, T_KEYWORD, T_STRING, T_PAREN
 # AST classes
 
 class Stmt(object):
-    pass
+    __slots__ = ()
 
 class Skip(Stmt):
+    __slots__ = ()
     
     def __repr__(self):
         return "Skip()"
+
+def block_as_string(stmts):
+    s = "["
+    first = True
+    for stmt in stmts:
+        if not first:
+            s += ", "
+        else:
+            first = False
+        s += stmt.__repr__()  # call the child's __repr__
+    s += "]"
+    return s
 
 class If(Stmt):
     __slots__ = ('bexp', 'block_then', 'block_else')
@@ -19,7 +32,7 @@ class If(Stmt):
         self.block_else = block_else
 
     def __repr__(self):
-        return "If(%r, %r, %r)" % (self.bexp, self.block_then, self.block_else)
+        return "If(%s, %s, %s)" % (self.bexp.__repr__(), block_as_string(self.block_then), block_as_string(self.block_else))
 
 class While(Stmt):
     __slots__ = ('bexp', 'block')
@@ -29,7 +42,7 @@ class While(Stmt):
         self.block = block
 
     def __repr__(self):
-        return "While(%r, %r)" % (self.bexp, self.block)
+        return "While(%s, %s)" % (self.bexp.__repr__(), block_as_string(self.block))
     
 
 class Assign(Stmt):
@@ -40,7 +53,7 @@ class Assign(Stmt):
         self.aexp = aexp
 
     def __repr__(self):
-        return "Assign(%r, %r)" % (self.varname, self.aexp)
+        return "Assign(%s, %s)" % (self.varname, self.aexp.__repr__())
 
 class Read(Stmt):
     __slots__ = ('varname',)
@@ -49,7 +62,7 @@ class Read(Stmt):
         self.varname = varname
 
     def __repr__(self):
-        return "Read(%r)" % self.varname
+        return "Read(%s)" % self.varname
 
 class WriteId(Stmt):
     __slots__ = ('varname',)
@@ -58,7 +71,7 @@ class WriteId(Stmt):
         self.varname = varname
 
     def __repr__(self):
-        return "WriteId(%r)" % self.varname
+        return "WriteId(%s)" % self.varname
 
 class WriteString(Stmt):
     __slots__ = ('text',)
@@ -67,10 +80,10 @@ class WriteString(Stmt):
         self.text = text
 
     def __repr__(self):
-        return "WriteString(%r)" % self.text
+        return "WriteString(%s)" % self.text
 
 class AExp(object):
-    pass
+    __slots__ = ()
 
 class Var(AExp):
     __slots__ = ('s',)
@@ -79,7 +92,7 @@ class Var(AExp):
         self.s = s
 
     def __repr__(self):
-        return "Var(%r)" % self.s
+        return "Var(%s)" % self.s
 
 class Num(AExp):
     __slots__ = ('i',)
@@ -88,7 +101,7 @@ class Num(AExp):
         self.i = i
 
     def __repr__(self):
-        return "Num(%r)" % self.i
+        return "Num(%s)" % self.i
 
 class Aop(AExp):
     __slots__ = ('op', 'left', 'right')
@@ -99,17 +112,19 @@ class Aop(AExp):
         self.right = right
 
     def __repr__(self):
-        return "Aop(%r, %r, %r)" % (self.op, self.left, self.right)
+        return "Aop(%s, %s, %s)" % (self.op, self.left.__repr__(), self.right.__repr__())
 
 class BExp(object):
-    pass
+    __slots__ = ()
 
 class TrueConst(BExp):
+    __slots__ = ()
 
     def __repr__(self):
         return "TrueConst()"
 
 class FalseConst(BExp):
+    __slots__ = ()
 
     def __repr__(self):
         return "FalseConst()"
@@ -123,7 +138,7 @@ class Bop(BExp):
         self.right = right
 
     def __repr__(self):
-        return "Bop(%r, %r, %r)" % (self.op, self.left, self.right)
+        return "Bop(%s, %s, %s)" % (self.op, self.left.__repr__(), self.right.__repr__())
 
 class Lop(BExp):
     __slots__ = ('op', 'left', 'right')
@@ -134,12 +149,12 @@ class Lop(BExp):
         self.right = right
 
     def __repr__(self):
-        return "Lop(%r, %r, %r)" % (self.op, self.left, self.right)
+        return "Lop(%s, %s, %s)" % (self.op, self.left.__repr__(), self.right.__repr__())
 
 # Helper functions for parsing
 
 class ParseError(Exception):
-    pass
+    __slots__ = ()
 
 def peek_token(tokens, i):
     """Return tokens[i] if in range, otherwise None."""
@@ -493,6 +508,18 @@ def parse_block(tokens, i):
 
 import time
 
+def print_ast(ast_list):
+    s = "["
+    first = True
+    for stmt in ast_list:
+        if not first:
+            s += ", "
+        else:
+            first = False
+        s += stmt.__repr__()
+    s += "]"
+    return s
+
 def parse_program(tokens):
     """
     Parse the entire token list as a "block" (or list of statements).
@@ -500,10 +527,10 @@ def parse_program(tokens):
     """
     start = time.time()
     block, i = parse_stmts(tokens, 0)
+    end = time.time()
     if i != len(tokens):
         raise ParseError("Extra tokens after valid parse at position %d" % i)
-    end = time.time()
     print("Parsed: ")
-    print(block)
+    print(print_ast(block))
     print("Parsing time taken: "+ str(end - start) + " seconds")
     return block
