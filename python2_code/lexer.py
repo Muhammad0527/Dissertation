@@ -596,25 +596,27 @@ def lexing_simp(r, s):
 # Define regex for keywords in language
 while_regex = SEQ(CHAR("w"), SEQ(CHAR("h"), SEQ(CHAR("i"), SEQ(CHAR("l"), CHAR("e")))))
 if_regex = SEQ(CHAR("i"), CHAR("f"))
-else_regex = SEQ(CHAR("e"), SEQ(CHAR("l"), SEQ(CHAR("s"), CHAR("e"))))
 then_regex = SEQ(CHAR("t"), SEQ(CHAR("h"), SEQ(CHAR("e"), CHAR("n"))))
+else_regex = SEQ(CHAR("e"), SEQ(CHAR("l"), SEQ(CHAR("s"), CHAR("e"))))
+do_regex = SEQ(CHAR("d"), CHAR("o"))
 true_regex = SEQ(CHAR("t"), SEQ(CHAR("r"), SEQ(CHAR("u"), CHAR("e"))))
 false_regex = SEQ(CHAR("f"), SEQ(CHAR("a"), SEQ(CHAR("l"), SEQ(CHAR("s"), CHAR("e")))))
 read_regex = SEQ(CHAR("r"), SEQ(CHAR("e"), SEQ(CHAR("a"), CHAR("d"))))
 write_regex = SEQ(CHAR("w"), SEQ(CHAR("r"), SEQ(CHAR("i"), SEQ(CHAR("t"), CHAR("e")))))
+skip_regex = SEQ(CHAR("s"), SEQ(CHAR("k"), SEQ(CHAR("i"), CHAR("p"))))
 
-KEYWORD_REGEX = ALT(while_regex, ALT(if_regex, ALT(then_regex, ALT(else_regex, ALT(true_regex, ALT(false_regex, ALT(read_regex, write_regex)))))))
+KEYWORD_REGEX = ALT(while_regex, ALT(if_regex, ALT(then_regex, ALT(else_regex, ALT(true_regex, ALT(false_regex, ALT(read_regex, ALT(write_regex, ALT(do_regex, skip_regex)))))))))
 
 # Define regex for operations in language
 plus_regex = CHAR("+")
 minus_regex = CHAR("-")
 times_regex = CHAR("*")
-divide_regex = CHAR("/")
 modulus_regex = CHAR("%")
+divide_regex = CHAR("/")
 equality_regex = SEQ(CHAR("="), CHAR("="))
 not_equal_regex = SEQ(CHAR("!"), CHAR("="))
-less_than_regex = CHAR("<")
 greater_than_regex = CHAR(">")
+less_than_regex = CHAR("<")
 less_than_equal_regex = SEQ(CHAR("<"), CHAR("="))
 greater_than_equal_regex = SEQ(CHAR(">"), CHAR("="))
 assign_regex = SEQ(CHAR(":"), CHAR("="))
@@ -628,12 +630,12 @@ LETTERS_REGEX = RANGE("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
 # Define regex for symbols in language
 full_stop_regex = CHAR(".")
-comma_regex = CHAR(",")
-semicolon_regex = CHAR(";")
-colon_regex = CHAR(":")
 underscore_regex = CHAR("_")
 equal_regex = CHAR("=")
+semicolon_regex = CHAR(";")
+comma_regex = CHAR(",")
 backslash_regex = CHAR("\\")
+colon_regex = CHAR(":")
 
 SYMBOLS_REGEX = ALT(backslash_regex, ALT(comma_regex, ALT(semicolon_regex, ALT(colon_regex, ALT(underscore_regex, ALT(full_stop_regex, ALT(less_than_regex, ALT(greater_than_regex, ALT(LETTERS_REGEX, equal_regex)))))))))
 

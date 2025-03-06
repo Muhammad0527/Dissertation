@@ -620,28 +620,30 @@ def lexing_simp(r, s):
 
 # Regular Expressions for the WHILE language
 
-# Keywords
+# Define regex for keywords in language
 while_regex = SEQ(CHAR("w"), SEQ(CHAR("h"), SEQ(CHAR("i"), SEQ(CHAR("l"), CHAR("e")))))
 if_regex = SEQ(CHAR("i"), CHAR("f"))
-else_regex = SEQ(CHAR("e"), SEQ(CHAR("l"), SEQ(CHAR("s"), CHAR("e"))))
 then_regex = SEQ(CHAR("t"), SEQ(CHAR("h"), SEQ(CHAR("e"), CHAR("n"))))
+else_regex = SEQ(CHAR("e"), SEQ(CHAR("l"), SEQ(CHAR("s"), CHAR("e"))))
+do_regex = SEQ(CHAR("d"), CHAR("o"))
 true_regex = SEQ(CHAR("t"), SEQ(CHAR("r"), SEQ(CHAR("u"), CHAR("e"))))
 false_regex = SEQ(CHAR("f"), SEQ(CHAR("a"), SEQ(CHAR("l"), SEQ(CHAR("s"), CHAR("e")))))
 read_regex = SEQ(CHAR("r"), SEQ(CHAR("e"), SEQ(CHAR("a"), CHAR("d"))))
 write_regex = SEQ(CHAR("w"), SEQ(CHAR("r"), SEQ(CHAR("i"), SEQ(CHAR("t"), CHAR("e")))))
+skip_regex = SEQ(CHAR("s"), SEQ(CHAR("k"), SEQ(CHAR("i"), CHAR("p"))))
 
-KEYWORD_REGEX = ALT(while_regex, ALT(if_regex, ALT(then_regex, ALT(else_regex, ALT(true_regex, ALT(false_regex, ALT(read_regex, write_regex)))))))
+KEYWORD_REGEX = ALT(while_regex, ALT(if_regex, ALT(then_regex, ALT(else_regex, ALT(true_regex, ALT(false_regex, ALT(read_regex, ALT(write_regex, ALT(do_regex, skip_regex)))))))))
 
-# Operators
+# Define regex for operations in language
 plus_regex = CHAR("+")
 minus_regex = CHAR("-")
 times_regex = CHAR("*")
-divide_regex = CHAR("/")
 modulus_regex = CHAR("%")
+divide_regex = CHAR("/")
 equality_regex = SEQ(CHAR("="), CHAR("="))
 not_equal_regex = SEQ(CHAR("!"), CHAR("="))
-less_than_regex = CHAR("<")
 greater_than_regex = CHAR(">")
+less_than_regex = CHAR("<")
 less_than_equal_regex = SEQ(CHAR("<"), CHAR("="))
 greater_than_equal_regex = SEQ(CHAR(">"), CHAR("="))
 assign_regex = SEQ(CHAR(":"), CHAR("="))
@@ -650,19 +652,21 @@ or_regex = SEQ(CHAR("|"), CHAR("|"))
 
 OPERATORS_REGEX = ALT(plus_regex, ALT(minus_regex, ALT(times_regex, ALT(divide_regex, ALT(modulus_regex, ALT(equality_regex, ALT(not_equal_regex, ALT(less_than_regex, ALT(greater_than_regex, ALT(less_than_equal_regex, ALT(greater_than_equal_regex, ALT(assign_regex, ALT(and_regex, or_regex)))))))))))))
 
-# Letters and Symbols
+# Define regex for letters in language
 LETTERS_REGEX = RANGE("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+# Define regex for symbols in language
 full_stop_regex = CHAR(".")
-comma_regex = CHAR(",")
-semicolon_regex = CHAR(";")
-colon_regex = CHAR(":")
 underscore_regex = CHAR("_")
 equal_regex = CHAR("=")
+semicolon_regex = CHAR(";")
+comma_regex = CHAR(",")
 backslash_regex = CHAR("\\")
+colon_regex = CHAR(":")
 
 SYMBOLS_REGEX = ALT(backslash_regex, ALT(comma_regex, ALT(semicolon_regex, ALT(colon_regex, ALT(underscore_regex, ALT(full_stop_regex, ALT(less_than_regex, ALT(greater_than_regex, ALT(LETTERS_REGEX, equal_regex)))))))))
 
-# Parentheses
+# Define regex for parentheses in language
 left_parenthesis_regex = CHAR("(")
 right_parenthesis_regex = CHAR(")")
 left_brace_regex = CHAR("{")
@@ -670,27 +674,32 @@ right_brace_regex = CHAR("}")
 
 PARENTHESES_REGEX = ALT(left_parenthesis_regex, ALT(right_parenthesis_regex, ALT(left_brace_regex, right_brace_regex)))
 
-# Numbers
+# Define regex for numbers in language
 DIGITS_REGEX = RANGE("0123456789")
-natual_numbers_regex = RANGE("123456789")
-NUMBERS_REGEX = ALT(CHAR("0"), SEQ(natual_numbers_regex, STAR(DIGITS_REGEX)))
 
-# Whitespace
+# Define regex for whitespace in language
 WHITESPACE_REGEX = PLUS(RANGE(" \t\n"))
 
-# Identifiers
+# Define regex for identifiers in language
 IDENTIFIER_REGEX = SEQ(LETTERS_REGEX, STAR(ALT(LETTERS_REGEX, ALT(DIGITS_REGEX, underscore_regex))))
 
-# Strings
+# Define regex for numbers in language
+natual_numbers_regex = RANGE("123456789")
+
+NUMBERS_REGEX = ALT(CHAR("0"), SEQ(natual_numbers_regex, STAR(DIGITS_REGEX)))
+
+# Define regex for strings in language
 speech_mark_regex = CHAR("\"")
 newline_regex = SEQ(CHAR("\\"), CHAR("n"))
+
 STRING_REGEX = SEQ(speech_mark_regex, SEQ(STAR(ALT(SYMBOLS_REGEX, ALT(DIGITS_REGEX, ALT(PARENTHESES_REGEX, ALT(WHITESPACE_REGEX, newline_regex))))), speech_mark_regex))
 
-# Comments
+# Define regex for commennts in language
 forward_slashs_regex = SEQ(CHAR("/"), CHAR("/"))
+
 COMMENT_REGEX = SEQ(forward_slashs_regex, SEQ(STAR(ALT(SYMBOLS_REGEX, ALT(CHAR(" "), ALT(PARENTHESES_REGEX, DIGITS_REGEX)))), CHAR("\n")))
 
-# Records for language tokens
+# Define records for the whole language
 KEYWORD_RECORD = RECD("k", KEYWORD_REGEX)
 OPERATORS_RECORD = RECD("o", OPERATORS_REGEX)
 STRING_RECORD = RECD("str", STRING_REGEX)
@@ -701,6 +710,7 @@ IDENTIFIER_RECORD = RECD("i", IDENTIFIER_REGEX)
 NUMBERS_RECORD = RECD("n", NUMBERS_REGEX)
 COMMENTS_RECORD = RECD("c", COMMENT_REGEX)
 
+# Define regex for the whole language
 LANGUAGE_REGEX = STAR(ALT(KEYWORD_RECORD, ALT(OPERATORS_RECORD, ALT(STRING_RECORD, ALT(PARANTHESES_RECORD, ALT(SEMICOLON_RECORD, ALT(WHITESPACE_RECORD, ALT(IDENTIFIER_RECORD, ALT(NUMBERS_RECORD, COMMENTS_RECORD)))))))))
 
 # Token classes
