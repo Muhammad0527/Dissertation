@@ -1,7 +1,6 @@
 from parser import If, While, Assign, Read, WriteId, WriteString, Var, Num, Aop, TrueConst, FalseConst, Bop, Lop, Skip
 import sys
 
-
 def env_update(env, varname, value):
     """Update the environment with a new variable binding."""
     new_env = env.copy()
