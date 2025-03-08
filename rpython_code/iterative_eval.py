@@ -1,5 +1,45 @@
 from parser import If, While, Assign, Read, WriteId, WriteString, Var, Num, Aop, TrueConst, FalseConst, Bop, Lop, Skip
-import sys
+
+import os
+
+def rpython_read_line():
+    "Read a line from stdin"
+    chars = []
+    while True:
+        c = os.read(0, 1)
+        if not c or c == '\n':
+            break
+        chars.append(c)
+    return "".join(chars)
+
+def rpython_print(s):
+    "Print a string to stdout without a new line"
+    os.write(1, s)
+
+def remove_quotes_and_convert_newlines(s):
+    """
+    RPython-friendly function that:
+      - removes all double quotes
+      - turns the two-character sequence \n into an actual newline
+    """
+    result_chars = []
+    i = 0
+    while i < len(s):
+        c = s[i]
+        if c == '"':
+            # Skip double quotes entirely
+            i += 1
+            continue
+        # Check if we have a backslash followed by 'n'
+        if c == '\\' and i + 1 < len(s) and s[i+1] == 'n':
+            result_chars.append('\n')
+            i += 2
+            continue
+        # Otherwise, keep the character
+        result_chars.append(c)
+        i += 1
+
+    return "".join(result_chars)
 
 def env_update(env, varname, value):
     """Update the environment with a new variable binding."""
@@ -97,9 +137,9 @@ def eval_bexp_iterative(bexp, env):
                     result_stack.append(left or right)
                 else:
                     raise Exception("Unknown logical operator: " + op)
-        elif node == TrueConst:
+        elif isinstance(node, TrueConst):
             result_stack.append(True)
-        elif node == FalseConst:
+        elif isinstance(node, FalseConst):
             result_stack.append(False)
         else:
             raise Exception("Unknown boolean expression type: " + str(node))
@@ -126,7 +166,7 @@ def run_program_iterative(block, env):
             env = env_update(env, stmt.varname, value)
 
         elif isinstance(stmt, Read):
-            line = sys.stdin.readline().strip()
+            line = rpython_read_line()
             try:
                 value = int(line)
             except:
@@ -134,11 +174,11 @@ def run_program_iterative(block, env):
             env = env_update(env, stmt.varname, value)
 
         elif isinstance(stmt, WriteId):
-            sys.stdout.write(str(env[stmt.varname]))
+            rpython_print(str(env[stmt.varname]))
 
         elif isinstance(stmt, WriteString):
-            stext = stmt.text.replace("\"", "").replace("\\n", "\n")
-            sys.stdout.write(stext)
+            stext = remove_quotes_and_convert_newlines(stmt.text)
+            rpython_print(stext)
 
         elif isinstance(stmt, If):
             cond = eval_bexp_iterative(stmt.bexp, env)
@@ -163,11 +203,17 @@ def run_program_iterative(block, env):
 # Iterative Evaluation of a Program
 import time
 
+def env_to_string(env):
+    items = []
+    for k, v in env.items():
+        items.append(str(k) + ": " + str(v))
+    return "{" + ", ".join(items) + "}"
+
 def run(ast):
     print("Eval:")
     start = time.time()
     final_env = run_program_iterative(ast, {})
     end = time.time()
-    print(str(final_env) + "\n")
+    print(env_to_string(final_env) + "\n")
     print("Evaluation Time: " + str(end - start) + "s")
     return 0

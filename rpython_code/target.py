@@ -3,7 +3,7 @@ import os
 
 from lexer import lex
 from parser import parse_program
-from recursive_eval import run
+from iterative_eval import run
 
 def read_file(file):
     cwd = os.getcwd()

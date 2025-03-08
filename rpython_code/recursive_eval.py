@@ -130,7 +130,7 @@ def eval_stmt(stmt, env):
         return env_update(env, stmt.varname, value)
 
     elif isinstance(stmt, WriteId):
-        print(str(env[stmt.varname]))
+        rpython_print(str(env[stmt.varname]))
         return env
 
     elif isinstance(stmt, WriteString):

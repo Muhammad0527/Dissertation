@@ -97,9 +97,9 @@ def eval_bexp_iterative(bexp, env):
                     result_stack.append(left or right)
                 else:
                     raise Exception("Unknown logical operator: " + op)
-        elif node == TrueConst:
+        elif isinstance(node, TrueConst):
             result_stack.append(True)
-        elif node == FalseConst:
+        elif isinstance(node, FalseConst):
             result_stack.append(False)
         else:
             raise Exception("Unknown boolean expression type: " + str(node))
