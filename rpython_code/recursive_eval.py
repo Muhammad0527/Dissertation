@@ -1,6 +1,45 @@
 from parser import If, While, Assign, Read, WriteId, WriteString, Var, Num, Aop, TrueConst, FalseConst, Bop, Lop, Skip
 
-import sys
+import os
+
+def rpython_read_line():
+    "Read a line from stdin"
+    chars = []
+    while True:
+        c = os.read(0, 1)
+        if not c or c == '\n':
+            break
+        chars.append(c)
+    return "".join(chars)
+
+def rpython_print(s):
+    "Print a string to stdout without a new line"
+    os.write(1, s)
+
+def remove_quotes_and_convert_newlines(s):
+    """
+    RPython-friendly function that:
+      - removes all double quotes
+      - turns the two-character sequence \n into an actual newline
+    """
+    result_chars = []
+    i = 0
+    while i < len(s):
+        c = s[i]
+        if c == '"':
+            # Skip double quotes entirely
+            i += 1
+            continue
+        # Check if we have a backslash followed by 'n'
+        if c == '\\' and i + 1 < len(s) and s[i+1] == 'n':
+            result_chars.append('\n')
+            i += 2
+            continue
+        # Otherwise, keep the character
+        result_chars.append(c)
+        i += 1
+
+    return "".join(result_chars)
 
 def env_update(env, varname, value):
     """Update the environment with a new variable binding."""
@@ -83,7 +122,7 @@ def eval_stmt(stmt, env):
         return env_update(env, stmt.varname, eval_aexp(stmt.aexp, env))
 
     elif isinstance(stmt, Read):
-        line = sys.stdin.readline().strip()
+        line = rpython_read_line()
         try:
             value = int(line)
         except:
@@ -91,12 +130,12 @@ def eval_stmt(stmt, env):
         return env_update(env, stmt.varname, value)
 
     elif isinstance(stmt, WriteId):
-        sys.stdout.write(str(env[stmt.varname]))
+        print(str(env[stmt.varname]))
         return env
 
     elif isinstance(stmt, WriteString):
-        stext = stmt.text.replace("\"", "").replace("\\n", "\n")
-        sys.stdout.write(stext)
+        stext = remove_quotes_and_convert_newlines(stmt.text)
+        rpython_print(stext)
         return env
 
     elif isinstance(stmt, If):
@@ -130,11 +169,17 @@ def eval_program(block):
 # Recursive Evaluation
 import time
 
+def env_to_string(env):
+    items = []
+    for k, v in env.items():
+        items.append(str(k) + ": " + str(v))
+    return "{" + ", ".join(items) + "}"
+
 def run(ast):
     print("Eval:")
     start = time.time()
     final_env = eval_program(ast)
     end = time.time()
-    print(str(final_env) + "\n")
+    print(env_to_string(final_env) + "\n")
     print("Recursive evaluation Time: " + str(end - start))
     return 0
