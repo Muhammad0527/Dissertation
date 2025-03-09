@@ -843,9 +843,42 @@ class T_KWD(Token):
     def __repr__(self):
         return "T_KWD(%s)" % self.s
 
-# ----------------------------------------------------------------------------
-# MAPPING (tag, string) --> Token
-# ----------------------------------------------------------------------------
+
+def eq_token(t1, t2):
+    if isinstance(t1, T_ID) and isinstance(t2, T_ID):
+        return t1.s == t2.s
+    elif isinstance(t1, T_TYPE) and isinstance(t2, T_TYPE):
+        return t1.s == t2.s
+    elif isinstance(t1, T_CONST) and isinstance(t2, T_CONST):
+        return t1.s == t2.s
+    elif isinstance(t1, T_CHAR) and isinstance(t2, T_CHAR):
+        return t1.c == t2.c
+    elif isinstance(t1, T_STRING) and isinstance(t2, T_STRING):
+        return t1.s == t2.s
+    elif isinstance(t1, T_OP) and isinstance(t2, T_OP):
+        return t1.s == t2.s
+    elif isinstance(t1, T_INT) and isinstance(t2, T_INT):
+        return t1.n == t2.n
+    elif isinstance(t1, T_DOUBLE) and isinstance(t2, T_DOUBLE):
+        return t1.n == t2.n
+    elif isinstance(t1, T_KWD) and isinstance(t2, T_KWD):
+        return t1.s == t2.s
+    elif isinstance(t1, T_SEMI) and isinstance(t2, T_SEMI):
+        return True
+    elif isinstance(t1, T_COLON) and isinstance(t2, T_COLON):
+        return True
+    elif isinstance(t1, T_COMMA) and isinstance(t2, T_COMMA):
+        return True
+    elif isinstance(t1, T_LPAREN) and isinstance(t2, T_LPAREN):
+        return True
+    elif isinstance(t1, T_RPAREN) and isinstance(t2, T_RPAREN):
+        return True
+    elif isinstance(t1, T_LBRACE) and isinstance(t2, T_LBRACE):
+        return True
+    elif isinstance(t1, T_RBRACE) and isinstance(t2, T_RBRACE):
+        return True
+    else:
+        return False
 
 def token(pair):
     kind, value = pair
@@ -911,7 +944,6 @@ def print_tokens(tokens):
             s += ", "
         else:
             first = False
-        # Explicitly call the __repr__ method on each token
         s += token.__repr__()
     s += "]"
     return s
