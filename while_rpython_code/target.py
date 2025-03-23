@@ -3,7 +3,7 @@ import os
 
 from lexer import lex
 from parser import parse_program
-from iterative_eval import run
+from iterative_jit import run
 
 def read_file(file):
     cwd = os.getcwd()
@@ -33,3 +33,8 @@ def main(argv=None):
 
 if __name__ == "__main__":
     main(sys.argv)
+
+
+def jitpolicy(driver):
+    from rpython.jit.codewriter.policy import JitPolicy
+    return JitPolicy()
