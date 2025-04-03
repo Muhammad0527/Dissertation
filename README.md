@@ -45,3 +45,8 @@ from iterative_eval import run
 uncomment the desired evaluator.
 
 ### For RPython evaluators:
+Run the following command
+```bash
+<language_rpython_code>/<file>_executable <example.language>
+```
+where <language>
