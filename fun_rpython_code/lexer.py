@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-RPython-compatible lexer code for the WHILE language.
-Note: All classes that hold instance attributes now define __slots__.
-"""
-
 class Rexp:
     __slots__ = ()  # No instance attributes in base class
 
@@ -211,7 +205,7 @@ class Rec(Val):
         return "Rec(\"%s\", %s)" % (self.x, self.v)
 
 def eq_rexp(r1, r2):
-    # Structural equality of regular expressions
+    """Structural equality of regular expressions"""
     if isinstance(r1, ZERO) and isinstance(r2, ZERO):
         return True
     if isinstance(r1, ONE) and isinstance(r2, ONE):
@@ -346,6 +340,7 @@ def ders(r, s):
         return ders(der(s[0], r), s[1:])
 
 def size(r):
+    """Compute the size of a regular expression"""
     if isinstance(r, ZERO) or isinstance(r, ONE):
         return 1
     elif isinstance(r, CHAR):
@@ -845,6 +840,7 @@ class T_KWD(Token):
 
 
 def eq_token(t1, t2):
+    """Structural equality of tokens"""
     if isinstance(t1, T_ID) and isinstance(t2, T_ID):
         return t1.s == t2.s
     elif isinstance(t1, T_TYPE) and isinstance(t2, T_TYPE):

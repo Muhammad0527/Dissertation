@@ -1,7 +1,7 @@
 from parser import If, While, Assign, Read, WriteId, WriteString, Var, Num, Aop, TrueConst, FalseConst, Bop, Lop, Skip
 
 import os
-from rpython.rlib.jit import JitDriver, purefunction, elidable
+from rpython.rlib.jit import JitDriver, elidable
 
 # JIT configuration
 def get_location(block_id, pc):

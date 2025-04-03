@@ -60,29 +60,37 @@ class BExp(object):
 
 class Var(Exp):
     __slots__ = ('s',)
+
     def __init__(self, s):
         self.s = s
+
     def __repr__(self):
         return "Var(%s)" % self.s
 
 class Num(Exp):
     __slots__ = ('i',)
+
     def __init__(self, i):
         self.i = i
+
     def __repr__(self):
         return "Num(%d)" % self.i
 
 class FNum(Exp):
     __slots__ = ('f',)
+
     def __init__(self, f):
         self.f = f
+
     def __repr__(self):
         return "FNum(%f)" % self.f
 
 class ChConst(Exp):
     __slots__ = ('c',)
+
     def __init__(self, c):
         self.c = c
+        
     def __repr__(self):
         return "ChConst(%s)" % str(self.c)
 

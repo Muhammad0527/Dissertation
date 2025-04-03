@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 RPython-compatible lexer code for the WHILE language.
 Note: All classes that hold instance attributes now define __slots__.

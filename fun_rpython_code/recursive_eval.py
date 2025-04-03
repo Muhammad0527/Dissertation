@@ -66,7 +66,7 @@ class NoneValue(Value):
 class FuncValue(Value):
     """
     Parent class for all function-like objects.
-    We define a common 'call' interface that BuiltinFunction and
+    A common 'call' interface that BuiltinFunction and
     ClosureFunction will implement.
     """
     __slots__ = ()
@@ -89,7 +89,7 @@ class BuiltinFunction(FuncValue):
         """Dispatch to a built-in function by name."""
         if self.name == 'skip':
             # does nothing
-            return NoneValue()
+            return NoneValue() # cant return None bc RPython likes to complain
 
         elif self.name == 'print_int':
             if len(arg_vals) != 1:
@@ -222,7 +222,7 @@ def eval_exp(exp, env):
                     raise Exception("Division by zero")
                 return FloatValue(left / right)
             elif op == '%':
-                return FloatValue(math.fmod(left, right))
+                return FloatValue(math.fmod(left, right)) # Doesnt work with % operator
             else:
                 raise Exception("Unknown operator: " + op)
         else:

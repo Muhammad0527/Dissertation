@@ -3,8 +3,8 @@ import os
 
 from lexer import lex
 from parser import parse_program
-from recursive_eval import run
-#from iterative_eval import run
+#from recursive_eval import run
+from iterative_eval import run
 
 def read_file(file):
     """Reads the content of a file from the 'examples' directory."""

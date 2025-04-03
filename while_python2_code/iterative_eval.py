@@ -39,7 +39,6 @@ def eval_aexp_iterative(aexp, env):
                 elif op == '*':
                     result_stack.append(left * right)
                 elif op == '/':
-                    # Use integer division.
                     result_stack.append(left // right)
                 elif op == '%':
                     result_stack.append(left % right)
