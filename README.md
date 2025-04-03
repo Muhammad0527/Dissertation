@@ -49,4 +49,10 @@ Run the following command
 ```bash
 <language_rpython_code>/<file>_executable <example.language>
 ```
-where <language>
+where `<language>` is either 'fun' or 'while'. The `<example>` program has to be in the correct directory for the specific langugage i.e. examples or fun_examples. Finally, `<file>` is the specific exacutable to be run, e.g. lexer, parser, iterative etc.
+
+For example:
+```bash
+fun_rpython_code/recursive_executable mand.fun
+```
+will run the fun language recursive executable with mand.fun as input, which is located in fun_examples.
