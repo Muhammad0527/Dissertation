@@ -30,7 +30,7 @@ Muthallajat/
 └── README.md                # Project overview and instructions
 ```
 ## Instructions
-- For Python2 evaluators:
+### For Python2 evaluators:
 To run the WHILE language interpreter, use the following command:
 ```bash
 python2 while_python2_code/target.py <example.while>
@@ -44,4 +44,4 @@ from iterative_eval import run
 ```
 uncomment the desired evaluator.
 
-- For RPython evaluators:
+### For RPython evaluators:
