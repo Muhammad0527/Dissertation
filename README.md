@@ -28,7 +28,7 @@ Muthallajat/
 ├── while_rpython_code/      # RPython code adapted from the Python2 version
 ├── .gitignore               # Git ignore rules
 └── README.md                # Project overview and instructions
-
+```
 ## Instructions
 For Python2:
 To run the WHILE language interpreter, use the following command:
