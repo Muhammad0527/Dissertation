@@ -28,3 +28,18 @@ Muthallajat/
 ├── while_rpython_code/      # RPython code adapted from the Python2 version
 ├── .gitignore               # Git ignore rules
 └── README.md                # Project overview and instructions
+
+## Instructions
+For Python2:
+To run the WHILE language interpreter, use the following command:
+```bash
+python2 while_python2_code/target.py <example.while>
+```
+where `<example.while>` is a program in the examples directory.
+
+To switch between the iterative and recursive evaluators, modify the `target.py` file to select the desired evaluator.
+```
+#from recursive_eval import run
+from iterative_eval import run
+```
+uncomment the desired evaluator.
