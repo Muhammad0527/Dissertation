@@ -30,7 +30,7 @@ Muthallajat/
 └── README.md                # Project overview and instructions
 ```
 ## Instructions
-### For Python2 evaluators:
+### For Python2 evaluators
 To run the WHILE language interpreter, use the following command:
 ```bash
 python2 while_python2_code/target.py <example.while>
@@ -44,7 +44,7 @@ from iterative_eval import run
 ```
 uncomment the desired evaluator.
 
-### For RPython evaluators:
+### For RPython evaluators
 Run the following command
 ```bash
 <language_rpython_code>/<file>_executable <example.language>
@@ -55,4 +55,8 @@ For example:
 ```bash
 fun_rpython_code/recursive_executable mand.fun
 ```
-will run the fun language recursive executable with mand.fun as input, which is located in fun_examples.
+will run the fun language recursive executable with `mand.fun` as input, which is located in `fun_examples`. Another example for clarity:
+```bash
+while_rpython_code/iterative_executable primes.while
+```
+will run the while language iterative executable with `primes.while` as input, which is located in `examples`.
